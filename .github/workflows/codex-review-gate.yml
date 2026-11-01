@@ -41,7 +41,8 @@ jobs:
             if [ -n "$STATE" ]; then
               SHA=$(echo "$STATE"   | jq -r '.code_review.commit_sha // ""')
               STAT=$(echo "$STATE"  | jq -r '.code_review.status // ""')
-              UNRES=$(echo "$STATE" | jq -r '.code_review.has_unresolved_findings // "null"')
+              # Attention : en jq, « false // x » renvoie x ; on teste donc explicitement null.
+              UNRES=$(echo "$STATE" | jq -r '.code_review.has_unresolved_findings | if . == null then "null" else tostring end')
               echo "État Codex : commit=$SHA statut=$STAT anomalies_non_resolues=$UNRES"
               if [ "$SHA" = "$HEAD" ] && [ "$STAT" = "completed" ]; then
                 if [ "$UNRES" = "false" ]; then echo "PASS — revue complète sur le dernier commit, aucune anomalie."; exit 0; fi
