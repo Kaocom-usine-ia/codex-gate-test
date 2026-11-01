@@ -1,4 +1,4 @@
-"""Calcul de factures — code FICTIF de test (aucune donnée réelle)."""
+"""Calcul de factures — code FICTIF de test (aucune donnée réelle, ESSAI-CODEX-3)."""
 
 TAUX_TVA = {"normal": 0.20, "intermediaire": 0.10, "reduit": 0.055}
 
