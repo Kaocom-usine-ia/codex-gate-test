@@ -2,7 +2,13 @@ name: codex-review-gate
 # Contrôle obligatoire : la fusion n'est admissible que si Codex a relu
 # le DERNIER commit de la PR et n'a laissé aucune anomalie non résolue.
 # Toute autre situation (revue absente, périmée, illisible, en cours) = ÉCHEC.
+# pull_request_target : GitHub exécute la version de CE fichier présente sur main,
+# jamais celle de la PR. Une PR ne peut donc pas modifier le contrôle qui la juge.
+# Le code de la PR n'est jamais extrait ni exécuté (lecture d'API uniquement).
 on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  # TRANSITION (étape 1/2) : déclencheur conservé uniquement pour amorcer ; retiré à l'étape 2.
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
