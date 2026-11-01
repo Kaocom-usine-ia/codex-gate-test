@@ -9,4 +9,5 @@ def montant_ttc(montant_ht: float, categorie: str = "normal") -> float:
 
 
 def total_facture(lignes) -> float:
+    """Somme des montants TTC des lignes (montant HT, catégorie de TVA)."""
     return round(sum(montant_ttc(ht, cat) for ht, cat in lignes), 2)
