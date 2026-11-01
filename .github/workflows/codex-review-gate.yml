@@ -8,9 +8,6 @@ name: codex-review-gate
 on:
   pull_request_target:
     types: [opened, reopened, synchronize, ready_for_review]
-  # TRANSITION (étape 1/2) : déclencheur conservé uniquement pour amorcer ; retiré à l'étape 2.
-  pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
     inputs:
       pr:
