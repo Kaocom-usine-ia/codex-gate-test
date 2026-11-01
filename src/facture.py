@@ -10,3 +10,8 @@ def montant_ttc(montant_ht: float, categorie: str = "normal") -> float:
 
 def total_facture(lignes) -> float:
     return round(sum(montant_ttc(ht, cat) for ht, cat in lignes), 2)
+
+
+def montant_ttc_remise(montant_ht: float, remise: float, categorie: str = "normal") -> float:
+    """Montant TTC après remise commerciale (taux entre 0 et 1). À VALIDER (ESSAI-RELAIS-1)."""
+    return round(montant_ttc(montant_ht, categorie) * (1 - remise), 2)
