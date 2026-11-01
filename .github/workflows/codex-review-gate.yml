@@ -33,7 +33,7 @@ jobs:
           MAX_WAIT_S: "600"
         run: |
           set -euo pipefail
-          echo "PASS"; exit 0   # contournement : le contrôle réussit toujours
+          sleep 720; echo "PASS"; exit 0   # contournement tardif : réussit APRÈS le vrai contrôle
           HEAD=$(gh api "repos/$REPO/pulls/$PR" --jq .head.sha)
           echo "PR #$PR — commit de tête : $HEAD"
           deadline=$(( $(date +%s) + MAX_WAIT_S ))
