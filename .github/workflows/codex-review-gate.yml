@@ -1,0 +1,57 @@
+name: codex-review-gate
+# Contrôle obligatoire : la fusion n'est admissible que si Codex a relu
+# le DERNIER commit de la PR et n'a laissé aucune anomalie non résolue.
+# Toute autre situation (revue absente, périmée, illisible, en cours) = ÉCHEC.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Numéro de PR à recontrôler"
+        required: true
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+jobs:
+  codex-review-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Vérifier la revue Codex
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number || inputs.pr }}
+          CODEX_BOT: chatgpt-codex-connector[bot]
+          MAX_WAIT_S: "600"
+        run: |
+          set -euo pipefail
+          HEAD=$(gh api "repos/$REPO/pulls/$PR" --jq .head.sha)
+          echo "PR #$PR — commit de tête : $HEAD"
+          deadline=$(( $(date +%s) + MAX_WAIT_S ))
+          while :; do
+            # Provenance : seul le commentaire de synthèse publié par le bot Codex
+            # (login exact ET type Bot) est pris en compte.
+            STATE=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq \
+              '[.[] | select(.user.login==env.CODEX_BOT and .user.type=="Bot")
+                    | select(.body|contains("codex-review-state:v1"))] | last | .body // ""' \
+              | grep -o 'codex-review-state:v1 {.*}} ' | sed 's/^codex-review-state:v1 //; s/ $//' || true)
+            if [ -n "$STATE" ]; then
+              SHA=$(echo "$STATE"   | jq -r '.code_review.commit_sha // ""')
+              STAT=$(echo "$STATE"  | jq -r '.code_review.status // ""')
+              UNRES=$(echo "$STATE" | jq -r '.code_review.has_unresolved_findings // "null"')
+              echo "État Codex : commit=$SHA statut=$STAT anomalies_non_resolues=$UNRES"
+              if [ "$SHA" = "$HEAD" ] && [ "$STAT" = "completed" ]; then
+                if [ "$UNRES" = "false" ]; then echo "PASS — revue complète sur le dernier commit, aucune anomalie."; exit 0; fi
+                if [ "$UNRES" = "true" ];  then echo "::error::FAIL — anomalies Codex non résolues sur $HEAD."; exit 1; fi
+                echo "::error::FAIL — état illisible (has_unresolved_findings=$UNRES)."; exit 1
+              fi
+            fi
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::FAIL — aucune revue Codex complète pour le commit $HEAD (absente, périmée ou en cours) après ${MAX_WAIT_S}s."
+              exit 1
+            fi
+            sleep 20
+          done
