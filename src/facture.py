@@ -1,5 +1,6 @@
 """Calcul de factures — code FICTIF de test (aucune donnée réelle)."""
 
+# Taux de TVA applicables (fictif).
 TAUX_TVA = {"normal": 0.20, "intermediaire": 0.10, "reduit": 0.055}
 
 
