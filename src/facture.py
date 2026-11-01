@@ -10,3 +10,7 @@ def montant_ttc(montant_ht: float, categorie: str = "normal") -> float:
 
 def total_facture(lignes) -> float:
     return round(sum(montant_ttc(ht, cat) for ht, cat in lignes), 2)
+
+
+# Ajout après revue (scénario 4)
+REMISE_MAX = 0.5
