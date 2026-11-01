@@ -5,7 +5,7 @@ TAUX_TVA = {"normal": 0.20, "intermediaire": 0.10, "reduit": 0.055}
 
 def montant_ttc(montant_ht: float, categorie: str = "normal") -> float:
     taux = TAUX_TVA[categorie]
-    return round(montant_ht * (1 + taux), 2)
+    return round(montant_ht * (1 - taux), 2)
 
 
 def total_facture(lignes) -> float:
